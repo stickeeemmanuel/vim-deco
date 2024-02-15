@@ -1,0 +1,30 @@
+---
+- name: Copy my vim settings to remote server
+  hosts: all
+  become_user: "{{ ansible_user }}"
+
+  tasks:
+    - name: Copy .vimrc to remote server
+      block:
+        - name: Copy .vimrc to remote server
+          ansible.builtin.copy:
+            src: "{{ item }}"
+            dest: "/home/{{ ansible_user }}"
+            remote_src: false
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0664
+          loop:
+            - /home/$USER/.vimrc
+
+    - name: Add line to .bashrc and source it
+      block:
+        - name: Add line to .bashrc
+          ansible.builtin.lineinfile:
+            path: ~/.bashrc
+            line: alias susy='sudo systemctl'
+            state: present
+            create: true
+
+        - name: Source .bashrc
+          ansible.builtin.command: "bash -c 'source /home/{{ ansible_user }}/.bashrc'"
